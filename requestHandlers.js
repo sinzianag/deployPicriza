@@ -1,7 +1,11 @@
 var exec = require("child_process").exec,
     querystring = require("querystring"),
     fs = require("fs"),
-    formidable = require("formidable");
+    loki = require("lokijs"),
+    formidable = require("formidable"),
+    url = require("url");
+
+var imgProcessing = require("./imageProcessing");
 
 function start(response) {
     console.log("Request handler start has been called");
@@ -25,26 +29,20 @@ function start(response) {
         response.end();
 }
 
-function upload(response, request) {
+function upload(response, request, database) {
     console.log("Request handler upload has been called");
 
     var form = new formidable.IncomingForm();
     form.parse(request, function(error, fields, files) {
         console.log("parsing done");
+        imgProcessing.processImage(files.upload.path, database);
 
-        fs.rename(files.upload.path, "/tmp/test.png", function (error) {
-            if (error) {
-                fs.unlink("/tmp/test.png");
-                fs.rename(files.upload.path, "/tmp/test.png");
-            }
-        });
     });
 
     response.writeHead(200, {"Content-Type":"text/html"});
-    response.write("received image:<br/>");
-    response.write("<img src='/show' />");
+    response.write("<h1>Image Received<h1/>");
+  //  response.write("<img src='/show' />");
     response.end();
-
 }
 
 function show(response) {
@@ -53,6 +51,24 @@ function show(response) {
     fs.createReadStream("/tmp/test.png").pipe(response);
 }
 
+function list(response, request, database) {
+    console.log("Request handler for show has been called");
+    response.writeHead(200, {"Content-Type": "text/json"});
+    var db = new loki('loki.json');
+    var files = db.getCollection('files');
+   response.write(database.getData());
+    response.end();
+}
+
+function getImage(response, request, database) {
+    console.log("Getting Image");
+    var queryData = url.parse(request.url, true).query;
+    fs.createReadStream('images/' + queryData['file']).pipe(response);
+}
+
+
 exports.start = start;
 exports.upload = upload;
 exports.show = show;
+exports.list = list;
+exports.getImage = getImage;
