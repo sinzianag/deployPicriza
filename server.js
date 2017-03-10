@@ -2,7 +2,7 @@ var http = require("http");
 var url = require("url");
 var formidable = require("formidable");
 
-var port = 80;
+var port = 8080;
 
 function start(handle, route, database) {
     function onRequest(request, response) {
