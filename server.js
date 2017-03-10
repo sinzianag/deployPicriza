@@ -2,7 +2,7 @@ var http = require("http");
 var url = require("url");
 var formidable = require("formidable");
 
-var port = process.env.port || 1337;
+var port = 80;
 
 function start(handle, route, database) {
     function onRequest(request, response) {
@@ -14,7 +14,7 @@ function start(handle, route, database) {
     http.createServer(onRequest).listen(port);
     database.init();
 
-    console.log("Server started on port: port");
+    console.log("Server started on port:" + port);
 }
 
 exports.start = start;
